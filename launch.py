@@ -10,7 +10,7 @@ dir_tmp = "tmp"
 
 python = sys.executable
 git = os.environ.get('GIT', "git")
-torch_command = os.environ.get('TORCH_COMMAND', "pip install torch==1.12.1+cu113 torchvision==0.13.1+cu113 --extra-index-url https://download.pytorch.org/whl/cu113")
+torch_command = os.environ.get('TORCH_COMMAND', "pip install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu116")
 requirements_file = os.environ.get('REQS_FILE', "requirements_versions.txt")
 commandline_args = os.environ.get('COMMANDLINE_ARGS', "")
 
@@ -31,7 +31,6 @@ def extract_arg(args, name):
 
 
 args, skip_torch_cuda_test = extract_arg(args, '--skip-torch-cuda-test')
-
 
 def repo_dir(name):
     return os.path.join(dir_repos, name)
