@@ -32,6 +32,7 @@ def extract_arg(args, name):
 
 
 args, skip_torch_cuda_test = extract_arg(args, '--skip-torch-cuda-test')
+args, skip_web_pip = extract_arg(args, '--skip-web-pip')
 xformers = '--xformers' in args
 
 
@@ -142,8 +143,8 @@ git_clone("https://github.com/salesforce/BLIP.git", repo_dir('BLIP'), "BLIP", bl
 
 if not is_installed("lpips"):
     run_pip(f"install -r {os.path.join(repo_dir('CodeFormer'), 'requirements.txt')}", "requirements for CodeFormer")
-
-run_pip(f"install -r {requirements_file}", "requirements for Web UI")
+if not skip_web_pip:
+    run_pip(f"install -r {requirements_file}", "requirements for Web UI")
 
 sys.argv += args
 

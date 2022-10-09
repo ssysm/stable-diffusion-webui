@@ -65,7 +65,7 @@ parser.add_argument("--autolaunch", action='store_true', help="open the webui UR
 parser.add_argument("--use-textbox-seed", action='store_true', help="use textbox for seeds in UI (no up/down, but possible to input long seeds)", default=False)
 parser.add_argument("--disable-console-progressbars", action='store_true', help="do not output progressbars to console", default=False)
 parser.add_argument("--enable-console-prompts", action='store_true', help="print prompts to console when generating with txt2img and img2img", default=False)
-
+parser.add_argument("--vae-path", type=str, help="Path to VAE Autoencoder", default=None)
 
 cmd_opts = parser.parse_args()
 
@@ -99,6 +99,7 @@ class State:
     current_image = None
     current_image_sampling_step = 0
     textinfo = None
+    is_model_loading = False
 
     def skip(self):
         self.skipped = True
@@ -114,6 +115,14 @@ class State:
     def get_job_timestamp(self):
         return datetime.datetime.now().strftime("%Y%m%d%H%M%S")  # shouldn't this return job_timestamp?
 
+    def reset_state(self):
+        self.skipped = False
+        self.interrupted = False
+        self.job = ""
+        self.job_count = 0
+        self.job_timestamp = '0'
+        self.sampling_step = 0
+        self.sampling_steps = 0
 
 state = State()
 
@@ -325,6 +334,7 @@ class Options:
 
 opts = Options()
 if os.path.exists(config_filename):
+    print('Option config file loaded.')
     opts.load(config_filename)
 
 sd_upscalers = []

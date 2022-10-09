@@ -79,7 +79,6 @@ def wrap_gradio_gpu_call(func, extra_outputs=None):
 
 modules.scripts.load_scripts(os.path.join(script_path, "scripts"))
 
-shared.sd_model = modules.sd_models.load_model()
 shared.opts.onchange("sd_model_checkpoint", wrap_queued_call(lambda: modules.sd_models.reload_model_weights(shared.sd_model)))
 
 
@@ -93,6 +92,7 @@ def webui():
         signal.signal(signal.SIGINT, sigint_handler)
 
         while 1:
+            shared.sd_model = modules.sd_models.load_model()
 
             demo = modules.ui.create_ui(wrap_gradio_gpu_call=wrap_gradio_gpu_call)
             

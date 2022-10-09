@@ -42,7 +42,7 @@ class Hypernetwork:
 
 def load_hypernetworks(path):
     res = {}
-
+    print(f'Searching for hypernetworks in {path}')
     for filename in glob.iglob(os.path.join(path, '**/*.pt'), recursive=True):
         try:
             hn = Hypernetwork(filename)

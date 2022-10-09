@@ -74,7 +74,10 @@ def list_models():
         basename, _ = os.path.splitext(filename)
         config = basename + ".yaml"
         if not os.path.exists(config):
+            print(f'Using default config for {title}')
             config = shared.cmd_opts.config
+        else:
+            print(f'Found config at {config} for {title}')
 
         checkpoints_list[title] = CheckpointInfo(filename, title, h, short_model_name, config)
 
@@ -147,25 +150,32 @@ def load_model_weights(model, checkpoint_info):
 
     devices.dtype = torch.float32 if shared.cmd_opts.no_half else torch.float16
 
-    vae_file = os.path.splitext(checkpoint_file)[0] + ".vae.pt"
+    vae_file = shared.cmd_opts.vae_path or os.path.splitext(checkpoint_file)[0] + ".vae.pt"
+    print(f'Attemping to load VAE weights from {vae_file}')
     if os.path.exists(vae_file):
         print(f"Loading VAE weights from: {vae_file}")
         vae_ckpt = torch.load(vae_file, map_location="cpu")
         vae_dict = {k: v for k, v in vae_ckpt["state_dict"].items() if k[0:4] != "loss"}
 
         model.first_stage_model.load_state_dict(vae_dict)
+    else:
+        print("Can not load VAE weights! But this is ok.")
 
     model.sd_model_hash = sd_model_hash
     model.sd_model_checkpoint = checkpoint_file
     model.sd_checkpoint_info = checkpoint_info
 
+    print(f"Weights loaded")
 
-def load_model():
+
+def load_model(checkpoint_info=None):
     from modules import lowvram, sd_hijack
-    checkpoint_info = select_checkpoint()
+    shared.state.is_model_loading = True
+    if checkpoint_info == None:
+        checkpoint_info = select_checkpoint()
 
-    if checkpoint_info.config != shared.cmd_opts.config:
-        print(f"Loading config from: {shared.cmd_opts.config}")
+    # if checkpoint_info.config != shared.cmd_opts.config:
+    #     print(f"Loading config from: {shared.cmd_opts.config}")
 
     sd_config = OmegaConf.load(checkpoint_info.config)
     sd_model = instantiate_from_config(sd_config.model)
@@ -181,17 +191,22 @@ def load_model():
     sd_model.eval()
 
     print(f"Model loaded.")
+    shared.state.is_model_loading = False
     return sd_model
 
 
 def reload_model_weights(sd_model, info=None):
     from modules import lowvram, devices, sd_hijack
+    print(f"Reloading model weights...")
+    shared.state.is_model_loading = True
     checkpoint_info = info or select_checkpoint()
 
     if sd_model.sd_model_checkpoint == checkpoint_info.filename:
+        shared.state.is_model_loading = False
         return
 
     if sd_model.sd_checkpoint_info.config != checkpoint_info.config:
+        shared.state.is_model_loading = False
         return load_model()
 
     if shared.cmd_opts.lowvram or shared.cmd_opts.medvram:
@@ -209,4 +224,5 @@ def reload_model_weights(sd_model, info=None):
         sd_model.to(devices.device)
 
     print(f"Weights loaded.")
+    shared.state.is_model_loading = False
     return sd_model
