@@ -17,7 +17,7 @@ class TextToImage(BaseModel):
     tiling: bool = Field(default=False, title="Tiling")
     n_iter: int = Field(default=1, title="N Iter")
     batch_size: int = Field(default=1, title="Batch Size")
-    cfg_scale: float = Field(default=7, title="Config Scale")
+    cfg_scale: float = Field(default=7, title="Classifier-Free Guidance Scale (How strict the generation will adhere to the prompt)")
     seed: int = Field(default=-1.0, title="Seed")
     subseed: int = Field(default=-1.0, title="Subseed")
     subseed_strength: float = Field(default=0, title="Subseed Strength")
@@ -28,6 +28,7 @@ class TextToImage(BaseModel):
     enable_hr: bool = Field(default=False, title="Enable HR")
     scale_latent: bool = Field(default=True, title="Scale Latent")
     denoising_strength: float = Field(default=0.7, title="Denoising Strength")
+    custom_script_input: list[any] = Field(default=[], title="Custom Script Input Param")
 
 
 class TextToImageResponse(BaseModel):
@@ -74,7 +75,7 @@ class Api:
         # app.add_api_route("/v1/pnginfo", self.pnginfoendoint)
 
     def txt2imgendoint(self, txt2imgreq: TextToImage = Body(embed=True)):
-        images, params, html = self.txt2img(*[v for v in txt2imgreq.dict().values()], 0, False, None, '', False, 1, '', 4, '', True)
+        images, params, html = self.txt2img(*[v for v in txt2imgreq.dict().values()])
         b64images = []
         for i in images:
             buffer = io.BytesIO()
