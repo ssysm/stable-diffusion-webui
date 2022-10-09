@@ -8,7 +8,6 @@ from typing import List, Union
 from threading import Lock
 import modules.shared as shared
 import modules.sd_models
-from modules import modelloader
 
 generate_lock = Lock()
 
