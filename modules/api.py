@@ -1,11 +1,13 @@
 import uvicorn
-from fastapi import FastAPI, Body, APIRouter
+from fastapi import FastAPI, Body, APIRouter, HTTPException
 from pydantic import BaseModel, Field
 import json
 import io
 import base64
 from typing import List
+from threading import Lock
 
+generate_lock = Lock()
 
 class TextToImage(BaseModel):
     prompt: str = Field(default="", title="Prompt Text", description="The text to generate an image from.")
@@ -58,7 +60,6 @@ class TextToImageResponse(BaseModel):
     index_of_first_image: int = Field(default=None, title="Index of First Image")
     html: str = Field(default=None, title="HTML")
 
-
 app = FastAPI()
 
 
@@ -76,6 +77,9 @@ class Api:
         # app.add_api_route("/v1/pnginfo", self.pnginfoendoint)
 
     def txt2imgendoint(self, txt2imgreq: TextToImage = Body(embed=True)):
+        if generate_lock.locked():
+            raise HTTPException(status_code=503, detail="Another Generation is in progress!")
+        generate_lock.acquire()
         images, params, html = self.txt2img(*[v for v in txt2imgreq.dict().values()])
         b64images = []
         for i in images:
@@ -83,7 +87,7 @@ class Api:
             i.save(buffer, format="png")
             b64images.append(base64.b64encode(buffer.getvalue()))
         resp_params = json.loads(params)
-
+        generate_lock.release()
         return TextToImageResponse(images=b64images, **resp_params, html=html)
 
     def img2imgendoint(self):
