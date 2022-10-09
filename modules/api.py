@@ -4,10 +4,11 @@ from pydantic import BaseModel, Field
 import json
 import io
 import base64
+from typing import List
 
 
 class TextToImage(BaseModel):
-    prompt: str = Field(..., title="Prompt Text", description="The text to generate an image from.")
+    prompt: str = Field(default="", title="Prompt Text", description="The text to generate an image from.")
     negative_prompt: str = Field(default="", title="Negative Prompt Text")
     prompt_style: str = Field(default="None", title="Prompt Style")
     prompt_style2: str = Field(default="None", title="Prompt Style 2")
@@ -23,22 +24,22 @@ class TextToImage(BaseModel):
     subseed_strength: float = Field(default=0, title="Subseed Strength")
     seed_resize_from_h: int = Field(default=0, title="Seed Resize From Height")
     seed_resize_from_w: int = Field(default=0, title="Seed Resize From Width")
+    seed_enable_extras: bool = Field(default=False, title="Enable Extra Seed Functions")
     height: int = Field(default=512, title="Height")
     width: int = Field(default=512, title="Width")
     enable_hr: bool = Field(default=False, title="Enable HR")
     scale_latent: bool = Field(default=True, title="Scale Latent")
     denoising_strength: float = Field(default=0.7, title="Denoising Strength")
-    custom_script_input: list[any] = Field(default=[], title="Custom Script Input Param")
-
+    # custom_script_input: List[Tuple[str, any]] = Field(default=[], title="Custom Script Input Param")
 
 class TextToImageResponse(BaseModel):
-    images: list[str] = Field(default=None, title="Image", description="The generated image in base64 format.")
-    all_prompts: list[str] = Field(default=None, title="All Prompts", description="The prompt text.")
+    images: List[str] = Field(default=None, title="Image", description="The generated image in base64 format.")
+    all_prompts: List[str] = Field(default=None, title="All Prompts", description="The prompt text.")
     negative_prompt: str = Field(default=None, title="Negative Prompt Text")
     seed: int = Field(default=None, title="Seed")
-    all_seeds: list[int] = Field(default=None, title="All Seeds")
+    all_seeds: List[int] = Field(default=None, title="All Seeds")
     subseed: int = Field(default=None, title="Subseed")
-    all_subseeds: list[int] = Field(default=None, title="All Subseeds")
+    all_subseeds: List[int] = Field(default=None, title="All Subseeds")
     subseed_strength: float = Field(default=None, title="Subseed Strength")
     width: int = Field(default=None, title="Width")
     height: int = Field(default=None, title="Height")
