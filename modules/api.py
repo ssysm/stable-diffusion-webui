@@ -1,5 +1,6 @@
 import uvicorn
 from fastapi import FastAPI, Body, APIRouter, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 import json
 import io
@@ -193,4 +194,11 @@ class Api:
 
     def launch(self, server_name, port):
         app.include_router(self.router)
+        app.add_middleware(
+            CORSMiddleware,
+            allow_origins=["*"] if shared.cmd_opts.allow_api_cors else [],
+            allow_credentials=True,
+            allow_methods=["*"],
+            allow_headers=["*"]
+        )
         uvicorn.run(app, host=server_name, port=port)
