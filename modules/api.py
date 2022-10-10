@@ -9,6 +9,7 @@ from typing import List, Union
 from threading import Lock
 import modules.shared as shared
 import modules.sd_models
+import modules.devices
 
 generate_lock = Lock()
 
@@ -111,6 +112,9 @@ class Api:
         shared.state.reset_state()
 
         # load model checkpoint
+        del shared.sd_model
+        shared.sd_model = None
+        modules.devices.torch_gc()
         model_checkpoint = txt2imgreq.modelOptions.checkpoint
         checkpoint_info = modules.sd_models.checkpoints_list.get(model_checkpoint, None)
         if checkpoint_info == None:
